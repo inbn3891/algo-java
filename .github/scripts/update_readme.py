@@ -11,10 +11,20 @@ FOLDER_MAP = {
     "hash": "Hash", "string": "String"
 }
 
-new_files = subprocess.check_output(
-    ["git", "diff", "--name-only", "--diff-filter=A", "HEAD~1", "HEAD"]
-).decode().strip().splitlines()
+result = subprocess.check_output(
+    ["git", "diff", "--name-only", "--diff-filter=A", "HEAD~1", "HEAD"],
+    env={**os.environ, "GIT_TERMINAL_PROMPT": "0", "LANG": "ko_KR.UTF-8"}
+)
+new_files = result.decode("utf-8").strip().splitlines()
 new_files = [f for f in new_files if f.endswith(".java")]
+
+# 한글 이스케이프 처리
+decoded_files = []
+for f in new_files:
+    if f.startswith('"') and f.endswith('"'):
+        f = f[1:-1].encode('raw_unicode_escape').decode('unicode_escape').encode('latin-1').decode('utf-8')
+    decoded_files.append(f)
+new_files = decoded_files
 
 if not new_files:
     print("새로 추가된 java 파일 없음")
