@@ -57,6 +57,7 @@ for file in new_files:
     if in_section and not inserted:
         new_lines.append(new_row)
         inserted = True
+        
     if inserted:
         content = "\n".join(new_lines) + "\n"
 
