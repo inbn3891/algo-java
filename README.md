@@ -77,4 +77,4 @@
 
 | 문제명 | 플랫폼 | 레벨 | 풀이 |
 |--------|--------|------|------|
-| MinMax | 프로그래머스 | LV1 | [풀이](./string/PGS_LV1_MinMax.java) |
+| MinMax | 프로그래머스 | LV1 | [풀이](./string/PGS_LV2_MinMax.java) |
