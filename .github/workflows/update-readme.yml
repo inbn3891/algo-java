@@ -20,20 +20,6 @@ jobs:
       - name: Detect new java files and update README
         run: |
           set +e
-          PLATFORM_MAP="PGS=프로그래머스"
-
-          get_platform() {
-            CODE=$1
-            for entry in $PLATFORM_MAP; do
-              KEY="${entry%%=*}"
-              VAL="${entry##*=}"
-              if [ "$KEY" = "$CODE" ]; then
-                echo "$VAL"
-                return
-              fi
-            done
-            echo "$CODE"
-          }
 
           NEW_FILES=$(git diff --name-only --diff-filter=A HEAD~1 HEAD | grep '\.java$')
 
@@ -42,71 +28,75 @@ jobs:
             exit 0
           fi
 
-          for FILE in $NEW_FILES; do
-            FILENAME=$(basename "$FILE" .java)
-            PLATFORM_CODE=$(echo "$FILENAME" | cut -d'_' -f1)
-            LEVEL=$(echo "$FILENAME" | cut -d'_' -f2)
-            PROBLEM=$(echo "$FILENAME" | cut -d'_' -f3-)
+          python3 << 'EOF'
+import os
+import re
+import subprocess
 
-            PLATFORM=$(get_platform "$PLATFORM_CODE")
-            LINK="./$FILE"
+PLATFORM_MAP = {"PGS": "프로그래머스"}
 
-            FOLDER=$(echo "$FILE" | cut -d'/' -f1)
+FOLDER_MAP = {
+    "dfs-bfs": "DFS/BFS", "dp": "DP", "greedy": "Greedy",
+    "graph": "Graph", "tree": "Tree", "sort": "Sort",
+    "binary-search": "Binary Search", "stack-queue": "Stack/Queue",
+    "hash": "Hash", "string": "String"
+}
 
-            case $FOLDER in
-              dfs-bfs) SECTION="DFS/BFS" ;;
-              dp) SECTION="DP" ;;
-              greedy) SECTION="Greedy" ;;
-              graph) SECTION="Graph" ;;
-              tree) SECTION="Tree" ;;
-              sort) SECTION="Sort" ;;
-              binary-search) SECTION="Binary Search" ;;
-              stack-queue) SECTION="Stack/Queue" ;;
-              hash) SECTION="Hash" ;;
-              string) SECTION="String" ;;
-              *) SECTION="" ;;
-            esac
+new_files = subprocess.check_output(
+    ["git", "diff", "--name-only", "--diff-filter=A", "HEAD~1", "HEAD"]
+).decode().strip().splitlines()
+new_files = [f for f in new_files if f.endswith(".java")]
 
-            if [ -z "$SECTION" ]; then
-              continue
-            fi
+with open("README.md", "r", encoding="utf-8") as f:
+    content = f.read()
 
-            NEW_ROW="| $PROBLEM | $PLATFORM | $LEVEL | [풀이]($LINK) |"
-            EMPTY_ROW="| | | | |"
+for file in new_files:
+    parts = os.path.basename(file).replace(".java", "").split("_", 2)
+    if len(parts) < 3:
+        continue
+    platform_code, level, problem = parts
+    platform = PLATFORM_MAP.get(platform_code, platform_code)
+    folder = file.split("/")[0]
+    section = FOLDER_MAP.get(folder)
+    if not section:
+        continue
 
-            if grep -q "$EMPTY_ROW" README.md; then
-              sed -i "0,/$EMPTY_ROW/s/$EMPTY_ROW/$NEW_ROW/" README.md
-            else
-              sed -i "/^## $SECTION/,/^## /{/^\s*$/!{/^## $SECTION/!{/^|/s/^[^#].*$/${NEW_ROW}\n&/}}}" README.md
-            fi
+    new_row = f"| {problem} | {platform} | {level} | [풀이](./{file}) |"
+    section_header = f"## {section}"
+    lines = content.splitlines()
+    new_lines = []
+    in_section = False
+    inserted = False
 
-          done
+    for i, line in enumerate(lines):
+        new_lines.append(line)
+        if line.strip() == section_header:
+            in_section = True
+        elif in_section and not inserted:
+            if line.startswith("## ") and line.strip() != section_header:
+                new_lines.insert(-1, new_row)
+                inserted = True
+                in_section = False
+            elif i == len(lines) - 1:
+                new_lines.append(new_row)
+                inserted = True
 
-          count_files() {
-            find "$1" -name "*.java" 2>/dev/null | wc -l | tr -d ' '
-          }
+    if inserted:
+        content = "\n".join(new_lines) + "\n"
 
-          DFS=$(count_files "dfs-bfs")
-          DP=$(count_files "dp")
-          GREEDY=$(count_files "greedy")
-          GRAPH=$(count_files "graph")
-          TREE=$(count_files "tree")
-          SORT=$(count_files "sort")
-          BS=$(count_files "binary-search")
-          SQ=$(count_files "stack-queue")
-          HASH=$(count_files "hash")
-          STRING=$(count_files "string")
+for folder, section in FOLDER_MAP.items():
+    count = len([f for f in os.listdir(folder) if f.endswith(".java")]) if os.path.exists(folder) else 0
+    content = re.sub(
+        rf"\| {re.escape(section)} \| .* \|",
+        f"| {section} | {count} |",
+        content
+    )
 
-          sed -i "s/| DFS\/BFS | .* |/| DFS\/BFS | $DFS |/" README.md
-          sed -i "s/| DP | .* |/| DP | $DP |/" README.md
-          sed -i "s/| Greedy | .* |/| Greedy | $GREEDY |/" README.md
-          sed -i "s/| Graph | .* |/| Graph | $GRAPH |/" README.md
-          sed -i "s/| Tree | .* |/| Tree | $TREE |/" README.md
-          sed -i "s/| Sort | .* |/| Sort | $SORT |/" README.md
-          sed -i "s/| Binary Search | .* |/| Binary Search | $BS |/" README.md
-          sed -i "s/| Stack\/Queue | .* |/| Stack\/Queue | $SQ |/" README.md
-          sed -i "s/| Hash | .* |/| Hash | $HASH |/" README.md
-          sed -i "s/| String | .* |/| String | $STRING |/" README.md
+with open("README.md", "w", encoding="utf-8") as f:
+    f.write(content)
+
+print("README 업데이트 완료")
+EOF
 
       - name: Commit changes
         run: |
