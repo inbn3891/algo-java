@@ -9,6 +9,6 @@ class Solution {
         int min = Arrays.stream(nums).min().getAsInt();
         int max = Arrays.stream(nums).max().getAsInt();
         
-        return min + " " + max;
+        return min + " " + max; 
     }
 }
