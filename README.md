@@ -15,7 +15,7 @@
 | Binary Search | 0 |
 | Stack/Queue | 0 |
 | Hash | 0 |
-| String | 0 |
+| String | 1 |
 
 ---
 
