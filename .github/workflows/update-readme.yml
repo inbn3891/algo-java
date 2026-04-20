@@ -14,9 +14,73 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
-      - name: Count and update README
+      - name: Detect new java files and update README
         run: |
+          PLATFORM_MAP="PGS=프로그래머스"
+
+          get_platform() {
+            CODE=$1
+            for entry in $PLATFORM_MAP; do
+              KEY="${entry%%=*}"
+              VAL="${entry##*=}"
+              if [ "$KEY" = "$CODE" ]; then
+                echo "$VAL"
+                return
+              fi
+            done
+            echo "$CODE"
+          }
+
+          NEW_FILES=$(git diff --name-only --diff-filter=A HEAD~1 HEAD | grep '\.java$')
+
+          if [ -z "$NEW_FILES" ]; then
+            echo "새로 추가된 java 파일 없음"
+            exit 0
+          fi
+
+          for FILE in $NEW_FILES; do
+            FILENAME=$(basename "$FILE" .java)
+            PLATFORM_CODE=$(echo "$FILENAME" | cut -d'_' -f1)
+            LEVEL=$(echo "$FILENAME" | cut -d'_' -f2)
+            PROBLEM=$(echo "$FILENAME" | cut -d'_' -f3-)
+
+            PLATFORM=$(get_platform "$PLATFORM_CODE")
+            LINK="./$FILE"
+
+            FOLDER=$(echo "$FILE" | cut -d'/' -f1)
+
+            case $FOLDER in
+              dfs-bfs) SECTION="DFS/BFS" ;;
+              dp) SECTION="DP" ;;
+              greedy) SECTION="Greedy" ;;
+              graph) SECTION="Graph" ;;
+              tree) SECTION="Tree" ;;
+              sort) SECTION="Sort" ;;
+              binary-search) SECTION="Binary Search" ;;
+              stack-queue) SECTION="Stack/Queue" ;;
+              hash) SECTION="Hash" ;;
+              string) SECTION="String" ;;
+              *) SECTION="" ;;
+            esac
+
+            if [ -z "$SECTION" ]; then
+              continue
+            fi
+
+            NEW_ROW="| $PROBLEM | $PLATFORM | $LEVEL | [풀이]($LINK) |"
+            EMPTY_ROW="| | | | |"
+
+            if grep -q "$EMPTY_ROW" README.md; then
+              sed -i "0,/$EMPTY_ROW/s/$EMPTY_ROW/$NEW_ROW/" README.md
+            else
+              sed -i "/^## $SECTION/,/^## /{/^\s*$/!{/^## $SECTION/!{/^|/s/^[^#].*$/${NEW_ROW}\n&/}}}" README.md
+            fi
+
+          done
+
           count_files() {
             find "$1" -name "*.java" 2>/dev/null | wc -l | tr -d ' '
           }
@@ -47,5 +111,5 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git diff --quiet && git diff --staged --quiet || git commit -am "docs: 진행 현황 자동 업데이트"
+          git diff --quiet && git diff --staged --quiet || git commit -am "docs: README 자동 업데이트"
           git push
