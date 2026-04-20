@@ -12,6 +12,6 @@ class Solution {
             answer += A[i] * B[n - 1 - i];
         }
         
-        return answer;
+        return answer; 
     }
 }
