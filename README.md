@@ -13,7 +13,7 @@
 | Tree | 0 |
 | Sort | 0 |
 | Binary Search | 0 |
-| Stack/Queue | 0 |
+| Stack/Queue | 1 |
 | Hash | 0 |
 | String | 2 |
 
@@ -61,6 +61,7 @@
 | 문제명 | 플랫폼 | 레벨 | 풀이 |
 |--------|--------|------|------|
 
+| 올바른괄호 | 프로그래머스 | LV2 | [풀이](./stack-queue/PGS_LV2_올바른괄호.java) |
 ## Hash
 
 | 문제명 | 플랫폼 | 레벨 | 풀이 |
