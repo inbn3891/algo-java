@@ -46,18 +46,17 @@ for file in new_files:
     inserted = False
 
     for i, line in enumerate(lines):
+        if in_section and not inserted and line.startswith("## ") and line.strip() != section_header:
+            new_lines.append(new_row)
+            inserted = True
+            in_section = False
         new_lines.append(line)
         if line.strip() == section_header:
             in_section = True
-        elif in_section and not inserted:
-            if line.startswith("## ") and line.strip() != section_header:
-                new_lines.insert(-1, new_row)
-                inserted = True
-                in_section = False
-            elif i == len(lines) - 1:
-                new_lines.append(new_row)
-                inserted = True
 
+    if in_section and not inserted:
+        new_lines.append(new_row)
+        inserted = True
     if inserted:
         content = "\n".join(new_lines) + "\n"
 
