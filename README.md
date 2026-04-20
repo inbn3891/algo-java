@@ -15,7 +15,7 @@
 | Binary Search | 0 |
 | Stack/Queue | 0 |
 | Hash | 0 |
-| String | 1 |
+| String | 2 |
 
 ---
 
@@ -78,3 +78,4 @@
 | 문제명 | 플랫폼 | 레벨 | 풀이 |
 |--------|--------|------|------|
 | MinMax | 프로그래머스 | LV1 | [풀이](./string/PGS_LV2_MinMax.java) |
+| JadenCase | 프로그래머스 | LV2 | [풀이](./string/PGS_LV2_JadenCase.java) |
