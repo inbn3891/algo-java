@@ -1,0 +1,51 @@
+name: Update README
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '**/*.java'
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Count and update README
+        run: |
+          count_files() {
+            find "$1" -name "*.java" 2>/dev/null | wc -l | tr -d ' '
+          }
+
+          DFS=$(count_files "dfs-bfs")
+          DP=$(count_files "dp")
+          GREEDY=$(count_files "greedy")
+          GRAPH=$(count_files "graph")
+          TREE=$(count_files "tree")
+          SORT=$(count_files "sort")
+          BS=$(count_files "binary-search")
+          SQ=$(count_files "stack-queue")
+          HASH=$(count_files "hash")
+          STRING=$(count_files "string")
+
+          sed -i "s/| DFS\/BFS | .* |/| DFS\/BFS | $DFS |/" README.md
+          sed -i "s/| DP | .* |/| DP | $DP |/" README.md
+          sed -i "s/| Greedy | .* |/| Greedy | $GREEDY |/" README.md
+          sed -i "s/| Graph | .* |/| Graph | $GRAPH |/" README.md
+          sed -i "s/| Tree | .* |/| Tree | $TREE |/" README.md
+          sed -i "s/| Sort | .* |/| Sort | $SORT |/" README.md
+          sed -i "s/| Binary Search | .* |/| Binary Search | $BS |/" README.md
+          sed -i "s/| Stack\/Queue | .* |/| Stack\/Queue | $SQ |/" README.md
+          sed -i "s/| Hash | .* |/| Hash | $HASH |/" README.md
+          sed -i "s/| String | .* |/| String | $STRING |/" README.md
+
+      - name: Commit changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git diff --quiet && git diff --staged --quiet || git commit -am "docs: 진행 현황 자동 업데이트"
+          git push
