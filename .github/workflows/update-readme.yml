@@ -19,6 +19,7 @@ jobs:
 
       - name: Detect new java files and update README
         run: |
+          set -x
           PLATFORM_MAP="PGS=프로그래머스"
 
           get_platform() {
