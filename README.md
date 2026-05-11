@@ -15,7 +15,7 @@
 | Binary Search | 0 |
 | Stack/Queue | 1 |
 | Hash | 0 |
-| String | 2 |
+| String | 3 |
 
 ---
 
@@ -71,3 +71,4 @@
 |--------|--------|------|------|
 | MinMax | 프로그래머스 | LV2 | [풀이](./string/PGS_LV2_MinMax.java) |
 | JadenCase | 프로그래머스 | LV2 | [풀이](./string/PGS_LV2_JadenCase.java) |
+| a와b출력하기 | 프로그래머스 | LV0 | [풀이](./string/PGS_LV0_a와b출력하기.java) |
